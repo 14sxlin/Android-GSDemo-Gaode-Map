@@ -51,12 +51,12 @@
         -->
         <meta-data
             android:name="com.dji.sdk.API_KEY"
-            android:value="Please enter your App Key here." />
+            android:value="a0e531906224cd92b62430d0" />
 
         <!-- 启用高德地图服务 -->
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="YOUR_AMAP_KEY" />
+            android:value="251cb84c148dd3155654074b4148935b" />
 
         <activity
             android:name="dji.sdk.SDKManager.DJIAoaControllerActivity"
@@ -85,7 +85,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".TakePhotoActivity"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 
+        </activity>
     </application>
 
 </manifest>

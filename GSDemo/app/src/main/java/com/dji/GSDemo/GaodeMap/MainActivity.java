@@ -53,6 +53,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     private Button locate, add, clear;
     private Button config, prepare, start, stop;
+    private Button startCamera;
 
     private boolean isAdd = false;
 
@@ -114,6 +115,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         prepare = (Button) findViewById(R.id.prepare);
         start = (Button) findViewById(R.id.start);
         stop = (Button) findViewById(R.id.stop);
+        startCamera = (Button) findViewById(R.id.startCamera);
 
         locate.setOnClickListener(this);
         add.setOnClickListener(this);
@@ -122,7 +124,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         prepare.setOnClickListener(this);
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
-
+        startCamera.setOnClickListener(this);
     }
 
     private void initMapView() {
@@ -293,6 +295,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     @Override
     public void onClick(View v) {
+        Log.d("demo","onclick");
         switch (v.getId()) {
             case R.id.locate:{
                 updateDroneLocation();
@@ -330,6 +333,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             }
             case R.id.stop:{
                 stopWaypointMission();
+                break;
+            }
+            case R.id.startCamera:{
+                Intent intent = new Intent();
+                Log.d("demo","camera");
+                intent.setClass(this,TakePhotoActivity.class);
+                startActivity(intent);
                 break;
             }
             default:

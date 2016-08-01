@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import dji.sdk.Camera.DJICamera;
 import dji.sdk.SDKManager.DJISDKManager;
 import dji.sdk.base.DJIBaseComponent;
 import dji.sdk.base.DJIBaseProduct;
@@ -28,6 +29,17 @@ public class DJIDemoApplication extends Application {
             mProduct = DJISDKManager.getInstance().getDJIProduct();
         }
         return mProduct;
+    }
+
+    /**
+     * 获取摄像机的实例
+     * @return
+     */
+    public static synchronized DJICamera getCameraInstance() {
+
+        if (getProductInstance() == null) return null;
+        return getProductInstance().getCamera();
+
     }
 
     @Override
