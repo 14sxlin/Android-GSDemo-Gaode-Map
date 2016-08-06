@@ -11,12 +11,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -47,6 +53,65 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
     private ToggleButton mRecordBtn;
     private TextView recordingTime;
 
+    //照片参数设置
+    private Button backBtn;
+    private final int PhtotoSetting = Menu.FIRST;
+    private Spinner ISOSpinner;//曝光度
+    private Spinner DurSpinner;//饱和度
+    private Spinner HueSpinner;//色调
+    private RadioGroup sharpRadios;//锐度
+    private RadioGroup contrastRadios;//对比度
+
+    protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateTitleBar();
+            onProductChange();
+        }
+
+    };
+
+    /**
+     * 根据连接的产品更换标题栏的名称
+     */
+    private void updateTitleBar() {
+        if(mConnectStatusTextView == null) return;
+        boolean ret = false;
+        DJIBaseProduct product = DJIDemoApplication.getProductInstance();
+        if (product != null) {
+            if(product.isConnected()) {
+                //The product is connected
+                mConnectStatusTextView.setText(DJIDemoApplication.getProductInstance().getModel() + " Connected");
+                ret = true;
+            } else {
+                if(product instanceof DJIAircraft) {
+                    DJIAircraft aircraft = (DJIAircraft)product;
+                    if(aircraft.getRemoteController() != null && aircraft.getRemoteController().isConnected()) {
+                        // The product is not connected, but the remote controller is connected
+                        mConnectStatusTextView.setText("only RC Connected");
+                        ret = true;
+                    }
+                }
+            }
+        }
+
+        if(!ret) {
+            // The product or the remote controller are not connected.
+            mConnectStatusTextView.setText("Disconnected");
+        }
+    }
+
+    /**
+     * 产品更换的时候,初始化预览窗口
+     */
+    protected void onProductChange() {
+        initPreviewer();
+    }
+
+    /*
+    以下是创建Activity的覆盖方法
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -71,7 +136,6 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
         setContentView(R.layout.activity_photo);
 
         initUI();
-
         // The callback for receiving the raw H264 video data for camera live view
         mReceivedVideoDataCallBack = new CameraReceivedVideoDataCallback() {
 
@@ -131,84 +195,49 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
 
     }
 
-    protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            updateTitleBar();
-            onProductChange();
-        }
-
-    };
-
-    private void updateTitleBar() {
-        if(mConnectStatusTextView == null) return;
-        boolean ret = false;
-        DJIBaseProduct product = DJIDemoApplication.getProductInstance();
-        if (product != null) {
-            if(product.isConnected()) {
-                //The product is connected
-                mConnectStatusTextView.setText(DJIDemoApplication.getProductInstance().getModel() + " Connected");
-                ret = true;
-            } else {
-                if(product instanceof DJIAircraft) {
-                    DJIAircraft aircraft = (DJIAircraft)product;
-                    if(aircraft.getRemoteController() != null && aircraft.getRemoteController().isConnected()) {
-                        // The product is not connected, but the remote controller is connected
-                        mConnectStatusTextView.setText("only RC Connected");
-                        ret = true;
-                    }
-                }
-            }
-        }
-
-        if(!ret) {
-            // The product or the remote controller are not connected.
-            mConnectStatusTextView.setText("Disconnected");
-        }
-    }
-
-    protected void onProductChange() {
-        initPreviewer();
-    }
-
     @Override
     public void onResume() {
-        Log.e(TAG, "onResume");
-        super.onResume();
-        initPreviewer();
-        updateTitleBar();
-        if(mVideoSurface == null) {
-            Log.e(TAG, "mVideoSurface is null");
-        }
-    }
+                    Log.e(TAG, "onResume");
+                    super.onResume();
+                    initPreviewer();
+                    updateTitleBar();
+                    if(mVideoSurface == null) {
+                        Log.e(TAG, "mVideoSurface is null");
+                    }
+                }
 
     @Override
     public void onPause() {
-        Log.e(TAG, "onPause");
-        uninitPreviewer();
-        super.onPause();
-    }
+                    Log.e(TAG, "onPause");
+                    uninitPreviewer();
+                    super.onPause();
+                }
 
     @Override
     public void onStop() {
-        Log.e(TAG, "onStop");
-        super.onStop();
-    }
+                    Log.e(TAG, "onStop");
+                    super.onStop();
+                }
 
     public void onReturn(View view){
-        Log.e(TAG, "onReturn");
-        this.finish();
-    }
-
+                    Log.e(TAG, "onReturn");
+                    this.finish();
+                }
     @Override
     protected void onDestroy() {
-        Log.e(TAG, "onDestroy");
-        uninitPreviewer();
-        unregisterReceiver(mReceiver);
-        super.onDestroy();
-    }
+                    Log.e(TAG, "onDestroy");
+                    uninitPreviewer();
+                    unregisterReceiver(mReceiver);
+                    super.onDestroy();
+                }
 
+    /*
+    以下是初始化窗口
+     */
+
+    /**
+     * 初始化拍照录像界面
+     */
     private void initUI() {
         mConnectStatusTextView = (TextView) findViewById(R.id.ConnectStatusTextView);
         // init mVideoSurface
@@ -243,6 +272,36 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
         });
     }
 
+    /**
+     * 初始化所有spinner
+     */
+    private void initSpinners(View view) {
+		ISOSpinner = initSpinner(view,R.id.isoSpinner,R.array.ISO, 0);
+		DurSpinner = initSpinner(view,R.id.dur,R.array.from_3to3, 3);
+		HueSpinner  = initSpinner(view,R.id.hue,R.array.from_3to3,3);
+	}
+
+    /**
+     * 初始化单个spinner
+     */
+    private  Spinner initSpinner(View view,int id,int arrayResource,int selection) {
+		Spinner spinner =(Spinner)view.findViewById(id);
+		String [] items  =getResources().getStringArray(arrayResource);
+		ArrayAdapter<String> aa =
+				new ArrayAdapter<String>(
+						this,
+						android.R.layout.simple_spinner_item, 
+						items);
+		aa.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+        spinner.setAdapter(aa);
+		spinner.setSelection(selection);
+        return spinner;
+	}
+
+
+    /*
+    以下是初始化预览窗口
+     */
     private void initPreviewer() {
 
         DJIBaseProduct product = DJIDemoApplication.getProductInstance();
@@ -273,40 +332,115 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.e(TAG, "onSurfaceTextureAvailable");
-        if (mCodecManager == null) {
-            mCodecManager = new DJICodecManager(this, surface, width, height);
-        }
-    }
+                    Log.e(TAG, "onSurfaceTextureAvailable");
+                    if (mCodecManager == null) {
+                        mCodecManager = new DJICodecManager(this, surface, width, height);
+                    }
+                }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        Log.e(TAG, "onSurfaceTextureSizeChanged");
-    }
+                    Log.e(TAG, "onSurfaceTextureSizeChanged");
+                }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Log.e(TAG,"onSurfaceTextureDestroyed");
-        if (mCodecManager != null) {
-            mCodecManager.cleanSurface();
-            mCodecManager = null;
-        }
+                    Log.e(TAG,"onSurfaceTextureDestroyed");
+                    if (mCodecManager != null) {
+                        mCodecManager.cleanSurface();
+                        mCodecManager = null;
+                    }
 
-        return false;
-    }
+                    return false;
+                }
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
     }
 
-    public void showToast(final String msg) {
-        runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(TakePhotoActivity.this, msg, Toast.LENGTH_SHORT).show();
+    /*
+     以下是创建菜单项
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE, PhtotoSetting, Menu.NONE, "照片参数设置");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        switch(id){
+            case PhtotoSetting:{
+                final LinearLayout layout = (LinearLayout)getLayoutInflater()
+                        .inflate(R.layout.dialog_photoparameter,null);
+                setContentView(layout);
+                initSpinners(layout);
+                initPhotoSettingRadio(layout);
+                backBtn = (Button)layout.findViewById(R.id.backBtn);
+                backBtn.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                      setContentView(R.layout.activity_photo);
+                    }
+                });
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 初始化照相参数设置的单选按钮
+     */
+    private void initPhotoSettingRadio(View view){
+        sharpRadios = (RadioGroup)view.findViewById(R.id.sharp);
+        contrastRadios = (RadioGroup)view.findViewById(R.id.contrast);
+        sharpRadios.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                switch (i){
+                    case R.id.sharp_hard:{
+                        showToast("hard");// TODO: 2016/8/5
+                        break;
+                    }
+                    case R.id.sharp_standard:{
+                        showToast("stand");// TODO: 2016/8/5
+                        break;
+                    }
+                    case R.id.sharp_soft:{
+                        showToast("soft");// TODO: 2016/8/5
+                        break;
+                    }
+
+                }
+            }
+        });
+        contrastRadios.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                switch (i) {
+                    case R.id.contrast_hard: {
+                        showToast("hard");// TODO: 2016/8/5
+                        break;
+                    }
+                    case R.id.contrast_standard: {
+                        showToast("stand");// TODO: 2016/8/5
+                        break;
+                    }
+                    case R.id.contrast_soft: {
+                        showToast("soft");// TODO: 2016/8/5
+                        break;
+                    }
+                }
             }
         });
     }
 
+
+    /*
+    监听按钮事件
+     */
     @Override
     public void onClick(View v) {
 
@@ -328,6 +462,9 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
         }
     }
 
+    /*
+    以下是照相录像功能
+     */
     private void switchCameraMode(CameraMode cameraMode){
 
         DJICamera camera = DJIDemoApplication.getCameraInstance();
@@ -346,6 +483,7 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
             }
 
     }
+
 
     // Method for taking photo
     private void captureAction(){
@@ -411,4 +549,14 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
         }
 
     }
+
+    private void showToast(final String msg){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(TakePhotoActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 }

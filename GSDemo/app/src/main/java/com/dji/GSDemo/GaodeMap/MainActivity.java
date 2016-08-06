@@ -295,7 +295,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     @Override
     public void onClick(View v) {
-        Log.d("demo","onclick");
         switch (v.getId()) {
             case R.id.locate:{
                 updateDroneLocation();
@@ -337,7 +336,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             }
             case R.id.startCamera:{
                 Intent intent = new Intent();
-                Log.d("demo","camera");
                 intent.setClass(this,TakePhotoActivity.class);
                 startActivity(intent);
                 break;
