@@ -17,6 +17,7 @@ import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -27,8 +28,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.util.ArrayList;
+
 import dji.sdk.Camera.DJICamera;
 import dji.sdk.Camera.DJICamera.CameraReceivedVideoDataCallback;
+import dji.sdk.Camera.DJICameraSettingsDef;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraMode;
 import dji.sdk.Camera.DJICameraSettingsDef.CameraShootPhotoMode;
 import dji.sdk.Codec.DJICodecManager;
@@ -275,11 +279,196 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
     /**
      * 初始化所有spinner
      */
-    private void initSpinners(View view) {
+    private void initSpinners(View view) {//// TODO: 2016/8/6  need test
+        final DJICamera camera = DJIDemoApplication.getCameraInstance();
+        if(camera==null)
+        {
+            showToast("camera not connect");
+//            return;
+        }
 		ISOSpinner = initSpinner(view,R.id.isoSpinner,R.array.ISO, 0);
 		DurSpinner = initSpinner(view,R.id.dur,R.array.from_3to3, 3);
 		HueSpinner  = initSpinner(view,R.id.hue,R.array.from_3to3,3);
-	}
+        ISOSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int id, long position) {
+                String selectedItem = (String)adapterView.getSelectedItem();
+                showToast(selectedItem);
+                if(camera==null) return;//// TODO: 2016/8/6  delete this line
+                switch (id)
+                {
+                    case 0:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.Auto, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 1:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_100, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 2:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_200, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 3:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_400, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 4:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_800, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 5:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_1600, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 6:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_3200, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 7:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_6400, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 8:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_12800, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case 9:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.ISO_25600, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    default:
+                    {
+                        camera.setISO(DJICameraSettingsDef.CameraISO.Auto, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("Error :"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+	    DurSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedItem = (String)adapterView.getSelectedItem();
+                showToast(""+(selectedItem)+" "+(i-3));
+                if(camera==null) return;//// TODO: 2016/8/6  delete this line
+                camera.setPhotoQuickViewDuration(i - 3, new DJICompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        if(djiError!=null)
+                            showToast("Error :"+djiError.getDescription());
+
+
+                    }
+                });
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        HueSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedItem = (String)adapterView.getSelectedItem();
+                showToast(""+(selectedItem)+" "+(i-3));
+                if(camera==null) return;//// TODO: 2016/8/6  delete this line
+                camera.setHue(i - 3, new DJICompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        if(djiError!=null)
+                            showToast("Error :"+djiError.getDescription());
+                    }
+                });
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+    }
 
     /**
      * 初始化单个spinner
@@ -392,8 +581,15 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
 
     /**
      * 初始化照相参数设置的单选按钮
+     * 并添加单选按钮组的事件监听
      */
     private void initPhotoSettingRadio(View view){
+        final DJICamera camera = DJIDemoApplication.getCameraInstance();
+        if(camera==null)
+        {
+            showToast("camera not connect");
+            return;
+        }
         sharpRadios = (RadioGroup)view.findViewById(R.id.sharp);
         contrastRadios = (RadioGroup)view.findViewById(R.id.contrast);
         sharpRadios.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -401,15 +597,33 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 switch (i){
                     case R.id.sharp_hard:{
-                        showToast("hard");// TODO: 2016/8/5
+                        camera.setSharpness(DJICameraSettingsDef.CameraSharpness.Hard, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
                         break;
                     }
                     case R.id.sharp_standard:{
-                        showToast("stand");// TODO: 2016/8/5
+                        camera.setSharpness(DJICameraSettingsDef.CameraSharpness.Standard, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
                         break;
                     }
                     case R.id.sharp_soft:{
-                        showToast("soft");// TODO: 2016/8/5
+                        camera.setSharpness(DJICameraSettingsDef.CameraSharpness.Soft, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
                         break;
                     }
 
@@ -421,15 +635,33 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 switch (i) {
                     case R.id.contrast_hard: {
-                        showToast("hard");// TODO: 2016/8/5
+                        camera.setContrast(DJICameraSettingsDef.CameraContrast.Hard, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
                         break;
                     }
                     case R.id.contrast_standard: {
-                        showToast("stand");// TODO: 2016/8/5
+                        camera.setContrast(DJICameraSettingsDef.CameraContrast.Standard, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
                         break;
                     }
                     case R.id.contrast_soft: {
-                        showToast("soft");// TODO: 2016/8/5
+                        camera.setContrast(DJICameraSettingsDef.CameraContrast.Soft, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
                         break;
                     }
                 }
