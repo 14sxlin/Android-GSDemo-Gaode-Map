@@ -7,11 +7,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -48,6 +51,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     protected static final String TAG = "MainActivity";
 
+    private final int HomePointManager = Menu.FIRST;
+
     private MapView mapView;
     private AMap aMap;
 
@@ -72,19 +77,19 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private DJIWaypointMission.DJIWaypointMissionHeadingMode mHeadingMode = DJIWaypointMission.DJIWaypointMissionHeadingMode.Auto;
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         initFlightController();
         initMissionManager();
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mReceiver);
     }
@@ -92,12 +97,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     /**
      * @Description : RETURN Button RESPONSE FUNCTION
      */
-    public void onReturn(View view){
+    public void onReturn(View view) {
         Log.d(TAG, "onReturn");
         this.finish();
     }
 
-    private void setResultToToast(final String string){
+    private void setResultToToast(final String string) {
         MainActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -181,8 +186,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         }
     };
 
-    private void onProductConnectionChange()
-    {
+    private void onProductConnectionChange() {
         initMissionManager();
         initFlightController();
     }
@@ -245,14 +249,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     @Override
     public void onMapClick(LatLng point) {
-        if (isAdd == true){
+        if (isAdd == true) {
             markWaypoint(point);
             DJIWaypoint mWaypoint = new DJIWaypoint(point.latitude, point.longitude, altitude);
             //Add Waypoints to Waypoint arraylist;
             if (mWaypointMission != null) {
                 mWaypointMission.addWaypoint(mWaypoint);
             }
-        }else{
+        } else {
             setResultToToast("Cannot Add Waypoint");
         }
     }
@@ -262,7 +266,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     }
 
     // Update the drone location based on states from MCU.
-    private void updateDroneLocation(){
+    private void updateDroneLocation() {
 
         LatLng pos = new LatLng(droneLocationLat, droneLocationLng);
         //Create MarkerOptions object
@@ -284,7 +288,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         });
     }
 
-    private void markWaypoint(LatLng point){
+    private void markWaypoint(LatLng point) {
         //Create MarkerOptions object
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(point);
@@ -296,16 +300,16 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.locate:{
+            case R.id.locate: {
                 updateDroneLocation();
                 cameraUpdate(); // Locate the drone's place
                 break;
             }
-            case R.id.add:{
+            case R.id.add: {
                 enableDisableAdd();
                 break;
             }
-            case R.id.clear:{
+            case R.id.clear: {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -313,30 +317,30 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                     }
 
                 });
-                if (mWaypointMission != null){
+                if (mWaypointMission != null) {
                     mWaypointMission.removeAllWaypoints(); // Remove all the waypoints added to the task
                 }
                 break;
             }
-            case R.id.config:{
+            case R.id.config: {
                 showSettingDialog();
                 break;
             }
-            case R.id.prepare:{
+            case R.id.prepare: {
                 prepareWayPointMission();
                 break;
             }
-            case R.id.start:{
+            case R.id.start: {
                 startWaypointMission();
                 break;
             }
-            case R.id.stop:{
+            case R.id.stop: {
                 stopWaypointMission();
                 break;
             }
-            case R.id.startCamera:{
+            case R.id.startCamera: {
                 Intent intent = new Intent();
-                intent.setClass(this,TakePhotoActivity.class);
+                intent.setClass(this, TakePhotoActivity.class);
                 startActivity(intent);
                 break;
             }
@@ -345,7 +349,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         }
     }
 
-    private void cameraUpdate(){
+    private void cameraUpdate() {
         LatLng pos = new LatLng(droneLocationLat, droneLocationLng);
         float zoomlevel = (float) 18.0;
         CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(pos, zoomlevel);
@@ -353,33 +357,33 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     }
 
-    private void enableDisableAdd(){
+    private void enableDisableAdd() {
         if (isAdd == false) {
             isAdd = true;
             add.setText("Exit");
-        }else{
+        } else {
             isAdd = false;
             add.setText("Add");
         }
     }
 
-    private void showSettingDialog(){
-        LinearLayout wayPointSettings = (LinearLayout)getLayoutInflater().inflate(R.layout.dialog_waypointsetting, null);
+    private void showSettingDialog() {
+        LinearLayout wayPointSettings = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_waypointsetting, null);
 
         final TextView wpAltitude_TV = (TextView) wayPointSettings.findViewById(R.id.altitude);
         RadioGroup speed_RG = (RadioGroup) wayPointSettings.findViewById(R.id.speed);
         RadioGroup actionAfterFinished_RG = (RadioGroup) wayPointSettings.findViewById(R.id.actionAfterFinished);
         RadioGroup heading_RG = (RadioGroup) wayPointSettings.findViewById(R.id.heading);
 
-        speed_RG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
+        speed_RG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.lowSpeed){
+                if (checkedId == R.id.lowSpeed) {
                     mSpeed = 3.0f;
-                } else if (checkedId == R.id.MidSpeed){
+                } else if (checkedId == R.id.MidSpeed) {
                     mSpeed = 5.0f;
-                } else if (checkedId == R.id.HighSpeed){
+                } else if (checkedId == R.id.HighSpeed) {
                     mSpeed = 10.0f;
                 }
             }
@@ -391,13 +395,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 Log.d(TAG, "Select finish action");
-                if (checkedId == R.id.finishNone){
+                if (checkedId == R.id.finishNone) {
                     mFinishedAction = DJIWaypointMission.DJIWaypointMissionFinishedAction.NoAction;
-                } else if (checkedId == R.id.finishGoHome){
+                } else if (checkedId == R.id.finishGoHome) {
                     mFinishedAction = DJIWaypointMission.DJIWaypointMissionFinishedAction.GoHome;
-                } else if (checkedId == R.id.finishAutoLanding){
+                } else if (checkedId == R.id.finishAutoLanding) {
                     mFinishedAction = DJIWaypointMission.DJIWaypointMissionFinishedAction.AutoLand;
-                } else if (checkedId == R.id.finishToFirst){
+                } else if (checkedId == R.id.finishToFirst) {
                     mFinishedAction = DJIWaypointMission.DJIWaypointMissionFinishedAction.GoFirstWaypoint;
                 }
             }
@@ -424,15 +428,15 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         new AlertDialog.Builder(this)
                 .setTitle("")
                 .setView(wayPointSettings)
-                .setPositiveButton("Finish",new DialogInterface.OnClickListener(){
+                .setPositiveButton("Finish", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
                         String altitudeString = wpAltitude_TV.getText().toString();
                         altitude = Integer.parseInt(nulltoIntegerDefalt(altitudeString));
-                        Log.e(TAG,"altitude "+altitude);
-                        Log.e(TAG,"speed "+mSpeed);
-                        Log.e(TAG, "mFinishedAction "+mFinishedAction);
-                        Log.e(TAG, "mHeadingMode "+mHeadingMode);
+                        Log.e(TAG, "altitude " + altitude);
+                        Log.e(TAG, "speed " + mSpeed);
+                        Log.e(TAG, "mFinishedAction " + mFinishedAction);
+                        Log.e(TAG, "mHeadingMode " + mHeadingMode);
                         configWayPointMission();
                     }
 
@@ -447,39 +451,40 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 .show();
     }
 
-    String nulltoIntegerDefalt(String value){
-        if(!isIntValue(value)) value="0";
+    String nulltoIntegerDefalt(String value) {
+        if (!isIntValue(value)) value = "0";
         return value;
     }
 
-    boolean isIntValue(String val)
-    {
+    boolean isIntValue(String val) {
         try {
-            val=val.replace(" ","");
+            val = val.replace(" ", "");
             Integer.parseInt(val);
-        } catch (Exception e) {return false;}
+        } catch (Exception e) {
+            return false;
+        }
         return true;
     }
 
-    private void configWayPointMission(){
+    private void configWayPointMission() {
 
-        if (mWaypointMission != null){
+        if (mWaypointMission != null) {
             mWaypointMission.finishedAction = mFinishedAction;
             mWaypointMission.headingMode = mHeadingMode;
             mWaypointMission.autoFlightSpeed = mSpeed;
 
-            if (mWaypointMission.waypointsList.size() > 0){
-                for (int i=0; i< mWaypointMission.waypointsList.size(); i++){
+            if (mWaypointMission.waypointsList.size() > 0) {
+                for (int i = 0; i < mWaypointMission.waypointsList.size(); i++) {
                     mWaypointMission.getWaypointAtIndex(i).altitude = altitude;
                 }
 
                 setResultToToast("Set Waypoint attitude successfully");
 
             }
-       }
+        }
     }
 
-    private void prepareWayPointMission(){
+    private void prepareWayPointMission() {
 
         if (mMissionManager != null && mWaypointMission != null) {
 
@@ -499,7 +504,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     }
 
-    private void startWaypointMission(){
+    private void startWaypointMission() {
 
         if (mMissionManager != null) {
 
@@ -513,7 +518,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         }
     }
 
-    private void stopWaypointMission(){
+    private void stopWaypointMission() {
 
         if (mMissionManager != null) {
             mMissionManager.stopMissionExecution(new DJIBaseComponent.DJICompletionCallback() {
@@ -524,10 +529,41 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 }
             });
 
-            if (mWaypointMission != null){
+            if (mWaypointMission != null) {
                 mWaypointMission.removeAllWaypoints();
             }
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE,HomePointManager,Menu.NONE,"充电点管理");
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch(id)
+        {
+            case HomePointManager:{
+                Intent intent = new Intent(this,HomeManageActivity.class);
+                startActivity(intent);
+                break;
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

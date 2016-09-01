@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Button
+        android:id="@+id/OpendbBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="打开数据库"/>
+    <Button
+        android:id="@+id/insertBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="插入"/>
+    <Button
+        android:id="@+id/deleteBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="删除"/>
+    <Button
+        android:id="@+id/deleteAllBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="清空"/>
+    <Button
+        android:id="@+id/readBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="读取"/>
+    <EditText
+        android:hint="要删除的id"
+        android:id="@+id/deleteId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+    <TextView
+        android:id="@+id/msgTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+</LinearLayout>

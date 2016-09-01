@@ -2,8 +2,10 @@ package com.dji.GSDemo.GaodeMap;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.SurfaceTexture;
@@ -21,14 +23,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import java.util.ArrayList;
 
 import dji.sdk.Camera.DJICamera;
 import dji.sdk.Camera.DJICamera.CameraReceivedVideoDataCallback;
@@ -46,7 +47,7 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
 
     private static final String TAG = MainActivity.class.getName();
 
-    protected DJICamera.CameraReceivedVideoDataCallback mReceivedVideoDataCallBack = null;
+    protected CameraReceivedVideoDataCallback mReceivedVideoDataCallBack = null;
 
     // Codec for video live view
     protected DJICodecManager mCodecManager = null;
@@ -60,11 +61,14 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
     //照片参数设置
     private Button backBtn;
     private final int PhtotoSetting = Menu.FIRST;
+    private final int CaptureFrequence = Menu.FIRST+1;
     private Spinner ISOSpinner;//曝光度
-    private Spinner DurSpinner;//饱和度
+    private Spinner SatSpinner;//饱和度
     private Spinner HueSpinner;//色调
     private RadioGroup sharpRadios;//锐度
     private RadioGroup contrastRadios;//对比度
+    private RadioGroup photoQualityRadios;//JEPG照片的质量
+
 
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
@@ -287,7 +291,7 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
 //            return;
         }
 		ISOSpinner = initSpinner(view,R.id.isoSpinner,R.array.ISO, 0);
-		DurSpinner = initSpinner(view,R.id.dur,R.array.from_3to3, 3);
+		SatSpinner = initSpinner(view,R.id.sat,R.array.from_3to3, 3);
 		HueSpinner  = initSpinner(view,R.id.hue,R.array.from_3to3,3);
         ISOSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -426,13 +430,13 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
 
             }
         });
-	    DurSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+	    SatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String selectedItem = (String)adapterView.getSelectedItem();
                 showToast(""+(selectedItem)+" "+(i-3));
                 if(camera==null) return;//// TODO: 2016/8/6  delete this line
-                camera.setPhotoQuickViewDuration(i - 3, new DJICompletionCallback() {
+                camera.setSaturation(i - 3, new DJICompletionCallback() {
                     @Override
                     public void onResult(DJIError djiError) {
                         if(djiError!=null)
@@ -487,98 +491,6 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
         return spinner;
 	}
 
-
-    /*
-    以下是初始化预览窗口
-     */
-    private void initPreviewer() {
-
-        DJIBaseProduct product = DJIDemoApplication.getProductInstance();
-
-        if (product == null || !product.isConnected()) {
-            showToast(getString(R.string.disconnected));
-        } else {
-            if (null != mVideoSurface) {
-                mVideoSurface.setSurfaceTextureListener(this);
-            }
-            if (!product.getModel().equals(Model.UnknownAircraft)) {
-                DJICamera camera = product.getCamera();
-                if (camera != null){
-                    // Set the callback
-                    camera.setDJICameraReceivedVideoDataCallback(mReceivedVideoDataCallBack);
-                }
-            }
-        }
-    }
-
-    private void uninitPreviewer() {
-        DJICamera camera = DJIDemoApplication.getCameraInstance();
-        if (camera != null){
-            // Reset the callback
-            DJIDemoApplication.getCameraInstance().setDJICameraReceivedVideoDataCallback(null);
-        }
-    }
-
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                    Log.e(TAG, "onSurfaceTextureAvailable");
-                    if (mCodecManager == null) {
-                        mCodecManager = new DJICodecManager(this, surface, width, height);
-                    }
-                }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-                    Log.e(TAG, "onSurfaceTextureSizeChanged");
-                }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-                    Log.e(TAG,"onSurfaceTextureDestroyed");
-                    if (mCodecManager != null) {
-                        mCodecManager.cleanSurface();
-                        mCodecManager = null;
-                    }
-
-                    return false;
-                }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-    }
-
-    /*
-     以下是创建菜单项
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(Menu.NONE, PhtotoSetting, Menu.NONE, "照片参数设置");
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-        switch(id){
-            case PhtotoSetting:{
-                final LinearLayout layout = (LinearLayout)getLayoutInflater()
-                        .inflate(R.layout.dialog_photoparameter,null);
-                setContentView(layout);
-                initSpinners(layout);
-                initPhotoSettingRadio(layout);
-                backBtn = (Button)layout.findViewById(R.id.backBtn);
-                backBtn.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                      setContentView(R.layout.activity_photo);
-                    }
-                });
-            }
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     /**
      * 初始化照相参数设置的单选按钮
      * 并添加单选按钮组的事件监听
@@ -592,6 +504,8 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
         }
         sharpRadios = (RadioGroup)view.findViewById(R.id.sharp);
         contrastRadios = (RadioGroup)view.findViewById(R.id.contrast);
+        photoQualityRadios = (RadioGroup)view.findViewById(R.id.quality);
+
         sharpRadios.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
@@ -667,8 +581,193 @@ public class TakePhotoActivity extends Activity implements SurfaceTextureListene
                 }
             }
         });
+        photoQualityRadios.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.quality_normal: {
+                        camera.setPhotoQuality(DJICameraSettingsDef.CameraPhotoQuality.Normal, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case R.id.quality_fine: {
+                        camera.setPhotoQuality(DJICameraSettingsDef.CameraPhotoQuality.Fine, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                    case R.id.quality_excellent: {
+                        camera.setPhotoQuality(DJICameraSettingsDef.CameraPhotoQuality.Excellent, new DJICompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if(djiError!=null)
+                                    showToast("设置出错:"+djiError.getDescription());
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+        });
     }
 
+    /*
+    以下是初始化预览窗口
+     */
+    private void initPreviewer() {
+
+        DJIBaseProduct product = DJIDemoApplication.getProductInstance();
+
+        if (product == null || !product.isConnected()) {
+            showToast(getString(R.string.disconnected));
+        } else {
+            if (null != mVideoSurface) {
+                mVideoSurface.setSurfaceTextureListener(this);
+            }
+            if (!product.getModel().equals(Model.UnknownAircraft)) {
+                DJICamera camera = product.getCamera();
+                if (camera != null){
+                    // Set the callback
+                    camera.setDJICameraReceivedVideoDataCallback(mReceivedVideoDataCallBack);
+                }
+            }
+        }
+    }
+
+    private void uninitPreviewer() {
+        DJICamera camera = DJIDemoApplication.getCameraInstance();
+        if (camera != null){
+            // Reset the callback
+            DJIDemoApplication.getCameraInstance().setDJICameraReceivedVideoDataCallback(null);
+        }
+    }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    Log.e(TAG, "onSurfaceTextureAvailable");
+                    if (mCodecManager == null) {
+                        mCodecManager = new DJICodecManager(this, surface, width, height);
+                    }
+                }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+                    Log.e(TAG, "onSurfaceTextureSizeChanged");
+                }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                    Log.e(TAG,"onSurfaceTextureDestroyed");
+                    if (mCodecManager != null) {
+                        mCodecManager.cleanSurface();
+                        mCodecManager = null;
+                    }
+
+                    return false;
+                }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+    }
+
+    /*
+     以下是创建菜单项
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE, PhtotoSetting, Menu.NONE, "相机参数设置");
+        menu.add(Menu.NONE, CaptureFrequence, Menu.NONE, "定时采集照片设置");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+        switch(id){
+            case PhtotoSetting:{
+                final LinearLayout layout = (LinearLayout)getLayoutInflater()
+                        .inflate(R.layout.dialog_photoparameter,null);
+                setContentView(layout);
+                initSpinners(layout);
+                initPhotoSettingRadio(layout);
+                backBtn = (Button)layout.findViewById(R.id.backBtn);
+                backBtn.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                      setContentView(R.layout.activity_photo);
+                    }
+                });
+                break;
+            }
+            case CaptureFrequence:{
+                LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_capture_frequency,null);
+                final EditText numEdit =(EditText)layout.findViewById(R.id.photoNum);
+                final EditText intervalEdit =(EditText)layout.findViewById(R.id.photoInterval);
+                new AlertDialog.Builder(this)
+                        .setTitle("计划任务")
+                        .setView(layout)
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String numStr = numEdit.getText().toString();
+                                String interval = intervalEdit.getText().toString();
+                                if(numStr!=null&&interval!=null&&!numStr.equals("")&&!interval.equals(""))
+                                {
+                                    DJICamera camera = DJIDemoApplication.getCameraInstance();
+                                    if(camera==null)
+                                    {
+                                        showToast("camera not connect");
+                                        return;
+                                    }
+                                    int intervalnum = Integer.parseInt(interval);
+                                    int count = Integer.parseInt(numStr);
+                                    if(!(count<=255&&count>=2))
+                                    {
+                                        showToast("数目应该在2到255之间");
+                                        return;
+                                    }
+                                    if(!(intervalnum>=2))
+                                    {
+                                        showToast("间隔应该大于等于2秒");
+                                    }
+                                    DJICameraSettingsDef.CameraPhotoIntervalParam param = new DJICameraSettingsDef.CameraPhotoIntervalParam();
+                                    param.captureCount = count;
+                                    param.timeIntervalInSeconds = intervalnum;
+                                    camera.setPhotoIntervalParam(param, new DJICompletionCallback() {
+                                        @Override
+                                        public void onResult(DJIError djiError) {
+                                            if(djiError==null)
+                                            {
+                                                showToast("设置计划拍照任务成功");
+                                            }else{
+                                                showToast("任务设置失败: "+djiError.getDescription());
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        })
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        }).create().show();
+                break;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     /*
     监听按钮事件
