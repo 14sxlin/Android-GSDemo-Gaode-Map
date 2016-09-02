@@ -1,5 +1,6 @@
 package com.dji.GSDemo.GaodeMap;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
@@ -14,7 +15,7 @@ import android.widget.Toast;
 
 import com.stu.database.ChargeAreaManager;
 
-public class HomeManageActivity extends AppCompatActivity {
+public class HomeManageActivity extends Activity {
 
     private ChargeAreaManager chargeAreaManager;
     private Button openBtn,insertBtn,deleteBtn,readBtn,deleteAllBtn;
@@ -68,7 +69,11 @@ public class HomeManageActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Cursor cursor = chargeAreaManager.getCursor();
                 String msg ="";
-                cursor.moveToFirst();
+                if(cursor==null|| !cursor.moveToFirst())
+                {
+                    showToast("没有数据");
+                    return ;
+                }
                 do
                 {
                     msg+=(cursor.getString(0)+"/"+cursor.getString(1)+"/"+cursor.getString(2)+"/"+cursor.getString(3)+"\n");
