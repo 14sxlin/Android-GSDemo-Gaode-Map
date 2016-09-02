@@ -85,7 +85,7 @@ public class ChargeAreaManager {
         ArrayList<HomePoint> list = new ArrayList<HomePoint>();
         Cursor cursor = getCursor();
         if(cursor==null) return  null;
-        cursor.moveToFirst();
+        if(!cursor.moveToFirst()) return null;
         do{
             HomePoint hp = new HomePoint();
             hp.setId(cursor.getLong(0));
