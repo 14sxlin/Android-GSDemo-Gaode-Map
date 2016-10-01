@@ -12,11 +12,14 @@ import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -253,6 +256,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             markWaypoint(point);
             DJIWaypoint mWaypoint = new DJIWaypoint(point.latitude, point.longitude, altitude);
             //Add Waypoints to Waypoint arraylist;
+            showWayPointActionSettingDialog(mWaypoint);
             if (mWaypointMission != null) {
                 mWaypointMission.addWaypoint(mWaypoint);
             }
@@ -260,6 +264,78 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             setResultToToast("Cannot Add Waypoint");
         }
     }
+
+    private void showWayPointActionSettingDialog(final DJIWaypoint mWaypoint){
+        Log.d("demo","show !");
+        LinearLayout linearLayout =(LinearLayout) getLayoutInflater().inflate(R.layout.dialog_waypoint_action , null);
+        final RadioGroup group = (RadioGroup)linearLayout.findViewById(R.id.actionRadioGroup);
+        final EditText stayEt = (EditText)linearLayout.findViewById(R.id.stayMills);
+        final EditText gimbalEt = (EditText)linearLayout.findViewById(R.id.gimbalPitch);
+        final EditText rotateAngleEt = (EditText)linearLayout.findViewById(R.id.rotateAngle);
+        limitRange(stayEt,0,3000,3000);
+        limitRange(gimbalEt,0,90,45);
+        limitRange(rotateAngleEt,-180,180,0);
+        new AlertDialog.Builder(this)
+                .setTitle("路径任务设置")
+                .setView(linearLayout)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        int id = group.getCheckedRadioButtonId();
+                        int toStay = Integer.parseInt(stayEt.getText().toString());
+                        int gimbalAngle = -Integer.parseInt(gimbalEt.getText().toString());
+                        int rotateAngle = Integer.parseInt(rotateAngleEt.getText().toString());
+                        switch(id)
+                        {
+                            case R.id.action_takePhoto:{
+                                mWaypoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.Stay,toStay));
+                                mWaypoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartTakePhoto,0));
+                                break;
+                            }
+                            case R.id.action_startRecord:{
+                                mWaypoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StartRecord,0));
+                                break;
+                            }
+                            case R.id.action_stopRecord:{
+                                mWaypoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.StopRecord,0));
+                                break;
+                            }
+                        }
+                        mWaypoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.GimbalPitch,gimbalAngle));
+                        mWaypoint.addAction(new DJIWaypoint.DJIWaypointAction(DJIWaypoint.DJIWaypointActionType.RotateAircraft,rotateAngle));
+
+                    }
+                })
+                .create().show();
+
+
+    }
+
+    private  void limitRange(final EditText et , final int from, final int to, final int defaultValue){
+        et.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                int value = Integer.parseInt(et.getText().toString());
+                if(from>value||value>to)
+                {
+                    Toast.makeText(getBaseContext(),"不在["+from+","+to+"]范围内",Toast.LENGTH_SHORT);
+                    et.setText(""+defaultValue);
+                }
+            }
+        });
+    }
+
 
     public static boolean checkGpsCoordination(double latitude, double longitude) {
         return (latitude > -90 && latitude < 90 && longitude > -180 && longitude < 180) && (latitude != 0f && longitude != 0f);

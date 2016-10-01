@@ -17,6 +17,8 @@ import dji.sdk.base.DJIBaseComponent;
 import dji.sdk.base.DJIError;
 
 /**
+ *
+ * TODO  功能可能需要更改
  * Created by LinSixin on 2016/8/26.
  */
 public class FlightController {
