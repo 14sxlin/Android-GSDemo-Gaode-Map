@@ -1,5 +1,6 @@
 package com.stu.database;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -11,42 +12,37 @@ import java.util.List;
  */
 public class ChargeAreaManager {
 
-    public static final String TABLENAME = "chargeArea";
-    public static final String COL_ID = "id";
-    public static final String COL_NAME = "name";
-    public static final String COL_LAT = "latitude";
-    public static final String COL_LNG = "longitude";
+
+    private ChargeAreaDBHelper dbHelper;
+
     private static final String path = "/data/data/com.dji.GSDemo.GaodeMap/databases/chargearea.db";
+
+
     private SQLiteDatabase chargeAreaDB = null;
 
-    public ChargeAreaManager(){
-        createOrOpenDatabase();
-    }
-    /**
-     * 创建或者打开数据库
-     * @return true 则打开或创建数据库成功
-     */
-    public boolean createOrOpenDatabase(){
-        chargeAreaDB = SQLiteDatabase.openOrCreateDatabase(path,null);
-        createOrOpenTable();
-        return chargeAreaDB!=null;
+    public ChargeAreaManager(Context context){
+
+        dbHelper = new ChargeAreaDBHelper(context,path,null,1);
     }
 
-    /**
-     * 打开或者创建数据表
-     * @return true 则创建或者打开数据库表成功
-     */
-    private boolean createOrOpenTable(){
-        String createTable = "CREATE TABLE IF NOT EXISTS "+TABLENAME+"(" +
-                COL_ID+" INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COL_NAME+" TEXT NOT NULL," +
-                COL_LAT+" DOUBLE NOT NULL," +
-                COL_LNG+" DOUBLE NOT NULL)";
-        if(chargeAreaDB==null)
-            return false;
-        chargeAreaDB.execSQL(createTable);
-        return true;
-    }
+
+
+
+//    /**
+//     * 打开或者创建数据表
+//     * @return true 则创建或者打开数据库表成功
+//     */
+//    private boolean createOrOpenTable(){
+//        String createTable = "CREATE TABLE IF NOT EXISTS "+TABLENAME+"(" +
+//                COL_ID+" INTEGER PRIMARY KEY AUTOINCREMENT," +
+//                COL_NAME+" TEXT NOT NULL," +
+//                COL_LAT+" DOUBLE NOT NULL," +
+//                COL_LNG+" DOUBLE NOT NULL)";
+//        if(chargeAreaDB==null)
+//            return false;
+//        chargeAreaDB.execSQL(createTable);
+//        return true;
+//    }
 
     /**
      * 插入数据
@@ -54,12 +50,14 @@ public class ChargeAreaManager {
      * @param longitude 经度
      */
     public void insert(String name,double latitude,double longitude){
-        String insertSql = "INSERT INTO "+TABLENAME+"" +
+        chargeAreaDB = dbHelper.getWritableDatabase();
+        String insertSql = "INSERT INTO "+ChargeAreaDBHelper.TABLENAME+"" +
                 "(name,latitude,longitude)" +
                 "VALUES('"+name+"',"+latitude+","+longitude+")";
         if(chargeAreaDB==null)
             return;
         chargeAreaDB.execSQL(insertSql);
+        chargeAreaDB.close();
     }
 
     /**
@@ -67,9 +65,10 @@ public class ChargeAreaManager {
      * @return 返回Cursor指针
      */
     public Cursor getCursor(){
+        chargeAreaDB = dbHelper.getReadableDatabase();
         if(chargeAreaDB!=null)
             return chargeAreaDB.query(
-                    TABLENAME,
+                    ChargeAreaDBHelper.TABLENAME,
                     new String[]{"id","name","latitude","longitude"},
                     null,//where
                     null,//whereArgs
@@ -82,6 +81,7 @@ public class ChargeAreaManager {
 
     public ArrayList<HomePoint> getHomePointList(){
         // TODO: 2016/8/26  test
+        chargeAreaDB = dbHelper.getReadableDatabase();
         ArrayList<HomePoint> list = new ArrayList<HomePoint>();
         Cursor cursor = getCursor();
         if(cursor==null) return  null;
@@ -94,6 +94,7 @@ public class ChargeAreaManager {
             hp.setLng(cursor.getDouble(3));
             list.add(hp);
         }while(cursor.moveToNext());
+        chargeAreaDB.close();
         return list;
     }
 
@@ -103,9 +104,11 @@ public class ChargeAreaManager {
      * @return
      */
     public boolean delete(int id){
-        String deleteSQL = "DELETE FROM "+TABLENAME+" WHERE id = "+id;
+        chargeAreaDB = dbHelper.getWritableDatabase();
+        String deleteSQL = "DELETE FROM "+ChargeAreaDBHelper.TABLENAME+" WHERE id = "+id;
         if(chargeAreaDB==null) return false;
         chargeAreaDB.execSQL(deleteSQL);
+        chargeAreaDB.close();
         return true;
     }
 
@@ -113,12 +116,13 @@ public class ChargeAreaManager {
      * 清空数据库表数据
      */
     public void truncate(){
-        String truncateSQL = "DROP TABLE "+TABLENAME;
+        chargeAreaDB = dbHelper.getWritableDatabase();
+        String truncateSQL = "DROP TABLE "+ChargeAreaDBHelper.TABLENAME;
         if(chargeAreaDB!=null)
         {
             chargeAreaDB.execSQL(truncateSQL);
-            createOrOpenTable();
         }
+        chargeAreaDB.close();
 
     }
 

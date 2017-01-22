@@ -25,23 +25,15 @@ public class HomeManageActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_manage);
-        chargeAreaManager = new ChargeAreaManager();
-        openBtn =(Button)findViewById(R.id.OpendbBtn);
+        chargeAreaManager = new ChargeAreaManager(getBaseContext());
+
         insertBtn = (Button)findViewById(R.id.insertBtn);
         deleteBtn = (Button)findViewById(R.id.deleteBtn);
         readBtn = (Button)findViewById(R.id.readBtn);
         deleteAllBtn = (Button)findViewById(R.id.deleteAllBtn);
         msgTv = (TextView)findViewById(R.id.msgTv) ;
         deleteId = (EditText)findViewById(R.id.deleteId);
-        openBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean rersult = chargeAreaManager.createOrOpenDatabase();
-                if(rersult)
-                    showToast("创建数据库成功");
-                else showToast("创建数据库失败");
-            }
-        });
+
         insertBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,6 +72,7 @@ public class HomeManageActivity extends Activity {
                 }while(cursor.moveToNext());
                 msg+="共 "+cursor.getCount()+" 条";
                 msgTv.setText(msg);
+                chargeAreaManager.closeDatabase();
             }
         });
 

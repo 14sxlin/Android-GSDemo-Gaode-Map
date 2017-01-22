@@ -52,7 +52,7 @@
             android:ems="10"
             android:id="@+id/gimbalPitch"
             android:layout_weight="1"
-            android:hint="[0.90]"
+            android:hint="[0,90]"
             android:inputType="numberSigned" />
 
         <TextView

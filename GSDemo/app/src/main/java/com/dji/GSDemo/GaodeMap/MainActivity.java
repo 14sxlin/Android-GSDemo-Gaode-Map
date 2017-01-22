@@ -144,6 +144,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
         LatLng shenzhen = new LatLng(22.5362, 113.9454);
         aMap.addMarker(new MarkerOptions().position(shenzhen).title("Marker in Shenzhen"));
+        aMap.setMapType(AMap.MAP_TYPE_SATELLITE);
         aMap.moveCamera(CameraUpdateFactory.newLatLng(shenzhen));
     }
 
@@ -326,6 +327,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
             @Override
             public void afterTextChanged(Editable s) {
+                String content = et.getText().toString();
+                if(content.equals("")) return;
                 int value = Integer.parseInt(et.getText().toString());
                 if(from>value||value>to)
                 {
